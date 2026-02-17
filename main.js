@@ -73,6 +73,10 @@ function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
         clearTimeUpdateInterval();
     }
+    // 播放列表結束後自動重新播放
+    if(isEndOfPlaylist() === true && playList !== null && event.data == YT.PlayerState.ENDED){
+        playDefaultVideo();
+    }
     getVideoData();
     if (playList) {
         getPlaylist();
@@ -124,12 +128,11 @@ function getPlaylist() {
     $('#playlist').text(`playlistIndex: ${playlistIndex} | playlistId: ${playlistId}`);
 }
 
-// playlistIndex === end of playlist => playlistIndex === -1
 function isEndOfPlaylist() {
     if (!playList) return "No playlist loaded";
     const playlistIndex = player.getPlaylistIndex();
     const playlist = player.getPlaylist();
-    return playlistIndex >= playlist.length;
+    return playlistIndex+1 >= playlist.length;
 }
 
 function getCurrentTime() {
