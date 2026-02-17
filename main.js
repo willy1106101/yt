@@ -135,9 +135,11 @@ function playVideoId(v) {
 }
 
 function getPlaylist() {
-    const playlistIndex = player.getPlaylistIndex();
+    if (!playList) return;
+    const playlistIndex = player.getPlaylistIndex()+1;
     const playlistId = player.getPlaylistId();
-    $('#playlist').text(`playlistIndex: ${playlistIndex} | playlistId: ${playlistId}`);
+    const playlistlen = player.getPlaylist().length;
+    $('#playlist').text(`playlistIndex: ${playlistIndex} | playlist length: ${playlistlen} | playlistId: ${playlistId}`);
 }
 
 function isEndOfPlaylist() {
