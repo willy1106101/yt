@@ -48,7 +48,12 @@ body {
     height: 100%;
     border-radius: 20px;
 }
-
+#controls-area {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+}
 .info-bar {
     background: rgba(255, 255, 255, 0.08);
     padding: 10px 15px;

@@ -58,6 +58,18 @@ $("#playDefaultBtn").click(function () {
     playDefaultVideo();
 });
 
+$("#playPauseBtn").click(function () {
+    togglePlayPause();
+});
+
+$("#nextBtn").click(function () {
+    nextVideo();
+});
+
+$("#prevBtn").click(function () {
+    previousVideo();
+}); 
+
 window.videoPlayer = player;
 function onPlayerReady(event) {
     loadPlaylist();
@@ -159,6 +171,24 @@ function playDefaultVideo() {
     });
     playList = defaultPlaylist;
 }
+
+function nextVideo() {
+    player.nextVideo();
+}
+
+function previousVideo() {
+    player.previousVideo();
+}
+
+function togglePlayPause() {
+    const playerState = player.getPlayerState();
+    if (playerState === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+    } else {
+        player.playVideo();
+    }
+}
+
 window.addEventListener("blur", function() {
     player.playVideo();
 });

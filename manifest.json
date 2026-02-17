@@ -1,0 +1,27 @@
+{
+  "name": "YT-OZA WEB",
+  "short_name": "YT-OZA",
+  "description": "YT-OZA WEB",
+  "start_url": "/",
+  "scope": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "/images/icon/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/icon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
