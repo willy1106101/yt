@@ -124,6 +124,14 @@ function getPlaylist() {
     $('#playlist').text(`playlistIndex: ${playlistIndex} | playlistId: ${playlistId}`);
 }
 
+// playlistIndex === end of playlist => playlistIndex === -1
+function isEndOfPlaylist() {
+    if (!playList) return "No playlist loaded";
+    const playlistIndex = player.getPlaylistIndex();
+    const playlist = player.getPlaylist();
+    return playlistIndex >= playlist.length;
+}
+
 function getCurrentTime() {
     const currentTime = player.getCurrentTime();
     const duration = player.getDuration();
