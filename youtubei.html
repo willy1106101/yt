@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="Willy Hsu">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YouTube Player</title>
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 輸入區 -->
+        <div class="input-group mb-4">
+            <input type="text" class="form-control" placeholder="貼上 YouTube 影片網址..." id="videoUrl">
+            <button class="btn btn-primary" type="button" id="playBtn">
+                <i class="bi bi-play-fill"></i> 播放
+            </button>
+            <button class="btn btn-outline-light" type="button" id="playDefaultBtn">
+                預設影片
+            </button>
+        </div>
+        <div class="main-card">
+            <!-- 資訊列 -->
+            <div class="info-bar">
+                播放資訊
+                <div id="videoTitle"></div>
+                <div id="playlist"></div>
+                <div id="currentTime"></div>
+            </div>
+
+            <!-- 播放器 -->
+            <div id="player-wrapper">
+                <div id="player"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+
+</body>
+
+</html>
