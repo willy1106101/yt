@@ -159,3 +159,6 @@ function playDefaultVideo() {
     });
     playList = defaultPlaylist;
 }
+window.addEventListener("blur", function() {
+    player.playVideo();
+});
