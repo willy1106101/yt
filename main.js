@@ -138,15 +138,17 @@ function getPlaylist() {
     if (!playList) return;
     const playlistIndex = player.getPlaylistIndex()+1;
     const playlistId = player.getPlaylistId();
-    const playlistlen = player.getPlaylist().length;
-    $('#playlist').text(`playlistIndex: ${playlistIndex} | playlist length: ${playlistlen} | playlistId: ${playlistId}`);
+    const playlist = player.getPlaylist();
+    const playlistlen = playlist !== null ? playlist.length : 0;
+    $('#playlist').text(`playlistIndex: (${playlistIndex}/${playlistlen}) | playlistId: ${playlistId}`);
 }
 
 function isEndOfPlaylist() {
     if (!playList) return "No playlist loaded";
     const playlistIndex = player.getPlaylistIndex();
     const playlist = player.getPlaylist();
-    return playlistIndex+1 >= playlist.length;
+    const playlistlen = playlist !== null ? playlist.length : 0;
+    return playlistIndex+1 >= playlistlen;
 }
 
 function getCurrentTime() {
