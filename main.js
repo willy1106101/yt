@@ -74,6 +74,7 @@ window.videoPlayer = player;
 function onPlayerReady(event) {
     loadPlaylist();
     playVideo(videoId);
+    togglePlayPause();
 }
 const timeUpdateInterval = () => { setInterval(() => { getCurrentTime(); }, 1000); };
 const clearTimeUpdateInterval = () => { clearInterval(timeUpdateInterval); };
@@ -198,7 +199,3 @@ function togglePlayPause() {
 window.addEventListener("blur", function() {
     player.playVideo();
 });
-
-window.onload = function (){
-    togglePlayPause();
-}
