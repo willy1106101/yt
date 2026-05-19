@@ -74,11 +74,14 @@ window.videoPlayer = player;
 function onPlayerReady(event) {
     loadPlaylist();
     playVideo(videoId);
-    window.postMessage({action: "yload-fis"}, '*');
 }
 const timeUpdateInterval = () => { setInterval(() => { getCurrentTime(); }, 1000); };
 const clearTimeUpdateInterval = () => { clearInterval(timeUpdateInterval); };
 function onPlayerStateChange(event) {
+    if(event.data === YT.PlayerState.CUED){
+        window.postMessage({action: "yload-fis"}, '*');
+    }
+    
     if (event.data == YT.PlayerState.PLAYING) {
         timeUpdateInterval();
         player.setPlaybackQuality('hd1080');
