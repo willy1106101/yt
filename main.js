@@ -197,7 +197,7 @@ function togglePlayPause() {
 
 window.addEventListener('message',function(event) {
     const data = event.data;
-    console.log("data");
+    console.log("data",data);
     if(data.action === "playVideo"){
         togglePlayPause();
     }
