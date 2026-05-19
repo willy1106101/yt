@@ -198,3 +198,7 @@ function togglePlayPause() {
 window.addEventListener("blur", function() {
     player.playVideo();
 });
+
+window.onload = function (){
+    togglePlayPause();
+}
