@@ -125,6 +125,7 @@ function stopVideo() {
 
 function playVideo(v) {
     playVideoId(v);
+    window.postMessage({action: "yload-fis"}, '*');
 }
 function nextVideo() {
     player.nextVideo();
