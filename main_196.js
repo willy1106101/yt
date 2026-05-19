@@ -200,6 +200,7 @@ function togglePlayPause() {
 
 window.addEventListener('message',function(event) {
     const data = event.data;
+    console.log("m196",data.action);
     if(data.action === "playVideo"){
         console.log("收到，開始播放");
         togglePlayPause();
