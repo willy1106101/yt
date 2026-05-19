@@ -154,6 +154,7 @@ function isEndOfPlaylist() {
 function getCurrentTime() {
     const currentTime = player.getCurrentTime();
     const duration = player.getDuration();
+    window.postMessage({action: "ydetail",data:{c: currentTime, d: duration}}, '*');
     window.parent.postMessage({action: "ydetail",data:{c: currentTime, d: duration}}, '*');
     $('#currentTime').text(`${formatTime(currentTime)} / ${formatTime(duration)}`);
 }
