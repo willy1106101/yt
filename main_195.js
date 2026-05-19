@@ -78,10 +78,6 @@ function onPlayerReady(event) {
 const timeUpdateInterval = () => { setInterval(() => { getCurrentTime(); }, 1000); };
 const clearTimeUpdateInterval = () => { clearInterval(timeUpdateInterval); };
 function onPlayerStateChange(event) {
-    if(event.data === YT.PlayerState.CUED){
-        window.postMessage({action: "yload-fis"}, '*');
-    }
-    
     if (event.data == YT.PlayerState.PLAYING) {
         timeUpdateInterval();
         player.setPlaybackQuality('hd1080');
@@ -166,6 +162,8 @@ function getCurrentTime() {
 
 function getVideoData() {
     const videoData = player.getVideoData();
+    window.postMessage({action: "yload-fis"}, '*');
+    window.parent.postMessage({action: "yload-fis"}, '*');
     $('#videoTitle').text(videoData.title);
 }
 
