@@ -195,6 +195,13 @@ function togglePlayPause() {
     }
 }
 
+window.addEventListener('message',function(event) {
+    const data = event.data;
+    if(data.action === "playVideo"){
+        togglePlayPause();
+    }
+});
+
 window.addEventListener("blur", function() {
     player.playVideo();
 });
