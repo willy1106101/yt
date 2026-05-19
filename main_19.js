@@ -74,6 +74,7 @@ window.videoPlayer = player;
 function onPlayerReady(event) {
     loadPlaylist();
     playVideo(videoId);
+    window.postMessage({action: "yload-fis"}, '*');
 }
 const timeUpdateInterval = () => { setInterval(() => { getCurrentTime(); }, 1000); };
 const clearTimeUpdateInterval = () => { clearInterval(timeUpdateInterval); };
