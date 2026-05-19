@@ -197,8 +197,8 @@ function togglePlayPause() {
 
 window.addEventListener('message',function(event) {
     const data = event.data;
-    console.log("data",data);
     if(data.action === "playVideo"){
+        console.log("收到，開始播放");
         togglePlayPause();
     }
 });
