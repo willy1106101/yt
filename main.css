@@ -1,77 +1,92 @@
+/* ==========================================================================
+   方案二：極簡高質感白 (Minimalist Light Mode)
+   ========================================================================== */
 body {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    min-height: 100vh;
-    color: #f1f5f9;
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.main-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+/* 輸入框優化 */
+.input-group .form-control {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px 0 0 8px;
 }
 
-.form-control {
-    border-radius: 12px;
+.input-group .form-control:focus {
+    border-color: #4f46e5; /* 質感靛藍 */
+    box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1);
 }
 
-.btn {
-    border-radius: 12px;
-    padding: 8px 20px;
+/* 按鈕配色調整 */
+#playBtn {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
 }
 
-.btn-primary {
-    background: linear-gradient(45deg, #6366f1, #3b82f6);
-    border: none;
+#playBtn:hover {
+    background-color: #4338ca;
 }
 
-.btn-primary:hover {
-    opacity: 0.9;
+/* 卡片與播放列表外盒 */
+.main-card, .border.rounded {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
+/* 控制按鈕 */
+.controls-area .btn-secondary {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+.controls-area .btn-secondary:hover {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+}
+
+/* RWD 播放器比例外框 */
 #player-wrapper {
     position: relative;
-    width: 100%;
-    max-height: 70vh;   /* 限制最高 70% 視窗高度 */
-    aspect-ratio: 16 / 9;
-    border-radius: 20px;
+    padding-bottom: 56.25%;
+    height: 0;
     overflow: hidden;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    background-color: #000;
 }
 
-#player {
+#player-wrapper iframe, #player {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    border-radius: 20px;
-}
-#controls-area {
-    position: absolute;
-    bottom: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-.info-bar {
-    background: rgba(255, 255, 255, 0.08);
-    padding: 10px 15px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    flex-wrap: wrap;
+    border: 0;
 }
 
-#videoTitle {
+/* 播放清單項目 */
+#playlistList .playlist-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    border: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#playlistList .playlist-item:hover {
+    background-color: #f1f5f9;
+}
+
+#playlistList .playlist-item.active {
+    background-color: rgba(79, 70, 229, 0.08);
+    border-color: rgba(79, 70, 229, 0.2);
+    color: #4f46e5;
     font-weight: 600;
-    font-size: 1.2rem;
-}
-
-#playlist,
-#currentTime {
-    font-size: 0.9rem;
-    opacity: 0.8;
 }
