@@ -27,7 +27,7 @@ function onYouTubeIframeAPIReady() {
         videoId: videoId,
         playerVars: {
             autoplay: 1,       // 自動播放
-            mute: 1,           // 靜音，確保瀏覽器允許 autoplay
+            mute: 0,           // 靜音，確保瀏覽器允許 autoplay
             playsinline: 1,
             controls: 1,
             fs: 1,
