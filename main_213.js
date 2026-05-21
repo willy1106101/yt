@@ -11,15 +11,14 @@ document.head.appendChild(tag);
 let player = null;
 window.videoPlayer = null;
 
-let timeUpdateTimer = null;
-
-let videoId = 'XrEI3eZmfWY';
-let playList = 'PL7cc4XHWYMmSTybEzMhSvctDkizFSGE4r';
+let videoId = '9xp1XWmJ_Wo';
+let playList = null;
+let lastVolume = 100;
 // ============================
 // oEmbed cache
 // ============================
 const videoCache = {};
-
+let timeUpdateTimer = null;
 // ============================
 // oEmbed
 // ============================
@@ -115,13 +114,12 @@ function onYouTubeIframeAPIReady() {
 // Ready
 // ============================
 function onPlayerReady() {
-    player.mute();
     loadCurrentMedia();
 }
 
 // 加載目前的影片或清單
 function loadCurrentMedia() {
-    if (!player) return;
+    if (!player) return console.log('`loadCurrentMedia` player is not ready!');
 
     if (playList) {
         player.loadPlaylist({
@@ -236,6 +234,8 @@ function startTimeUpdate() {
                 `${format(c)} / ${format(d)}`
             );
         }
+
+        updateMuteIcon(player.isMuted());
     }, 1000);
 }
 
@@ -303,14 +303,15 @@ $('#playBtn').on('click', () => {
 
     const target = parseYoutubeUrl(url);
 
+    // 💡 關鍵修正：切換時必須徹底清空另一個全域變數，避免 loadCurrentMedia 誤判
     if (target.playlistId) {
-        // 如果有清單 ID，優先播放清單
+        // 如果是播放清單
         playList = target.playlistId;
-        videoId = target.videoId || null; // 有內含單片 ID 就記錄
+        videoId = target.videoId || null; // 有包含單片 ID 就記錄，沒有就 null
         loadCurrentMedia();
     } else if (target.videoId) {
-        // 如果純粹是單一影片
-        playList = null;
+        // 如果是純單一影片
+        playList = null;                 // 💡 強制清空歌單變數
         videoId = target.videoId;
         loadCurrentMedia();
     } else {
@@ -328,5 +329,39 @@ $('#videoUrl').on('keypress', (e) => {
 // 2. 點擊「預設影片」按鈕
 $('#playDefaultBtn').on('click', () => {
     $('#videoUrl').val(''); // 清空輸入框
+    videoId = 'XrEI3eZmfWY';
+    playList = 'PL7cc4XHWYMmSTybEzMhSvctDkizFSGE4r';
     loadCurrentMedia();
 });
+
+// 3. 播放速度下拉選單變更
+$('#speedSelect').on('change', function () {
+    if (!player) return;
+    
+    const speedValue = parseFloat($(this).val());
+    player.setPlaybackRate(speedValue);
+});
+
+// 靜音按鈕
+$('#muteBtn').on('click', function () {
+    if (!player) return;
+
+    if (player.isMuted()) {
+        // 解除靜音
+        const restoreVolume = lastVolume > 0 ? lastVolume : 50;
+        player.unMute();
+        updateMuteIcon(false);
+    } else {
+        player.mute();
+        updateMuteIcon(true);
+    }
+});
+
+// 工具：根據靜音狀態切換 Bootstrap 圖示
+function updateMuteIcon(isMuted) {
+    if (isMuted) {
+        $('#muteBtn').html('<i class="bi bi-volume-mute-fill"></i>');
+    } else {
+        $('#muteBtn').html('<i class="bi bi-volume-up-fill"></i>');
+    }
+}
