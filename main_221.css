@@ -1,0 +1,209 @@
+/* ==========================================================================
+   方案二：極簡高質感白 (Minimalist Light Mode)
+   ========================================================================== */
+body {
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* 輸入框優化 */
+.input-group .form-control {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px 0 0 8px;
+}
+
+.input-group .form-control:focus {
+    border-color: #4f46e5;
+    /* 質感靛藍 */
+    box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1);
+}
+
+/* 按鈕配色調整 */
+#playBtn {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+}
+
+#playBtn:hover {
+    background-color: #4338ca;
+}
+
+/* 卡片與播放列表外盒 */
+.main-card,
+.border.rounded {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* 控制按鈕 */
+.controls-area .btn-secondary {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+.controls-area .btn-secondary:hover {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+}
+
+/* RWD 播放器比例外框 */
+#player-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    background-color: #000;
+}
+
+#player-wrapper iframe,
+#player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* 播放清單項目 */
+#playlistList .playlist-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    border: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#playlistList .playlist-item:hover {
+    background-color: #f1f5f9;
+}
+
+#playlistList .playlist-item.active {
+    background-color: rgba(79, 70, 229, 0.08);
+    border-color: rgba(79, 70, 229, 0.2);
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+/* iOS 偽全螢幕樣式降級處理 */
+.ios-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    background-color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.player-cover {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #111;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: background-image 0.5s ease-in-out;
+    /* 換片時淡入淡出效果 */
+    z-index: 20;
+    /* 確保蓋在 iframe 上面 */
+    pointer-events: none;
+    /* 讓滑鼠點擊可以穿透，不影響 YouTube 內建控制 */
+}
+
+.player-cover-title {
+    position: absolute;
+    bottom: 20px;
+    left: 15px;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 16px;
+}
+
+.player-progress-bar-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    z-index: 40;
+}
+
+.player-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #0d6efd;
+    /* Bootstrap Primary 藍色，可換成你想要的顏色 */
+    transition: width 0.1s linear;
+}
+
+@media (max-width: 768px) {
+    /* 1. 空間優化：移除外框陰影與多餘留白，最大化可視範圍 */
+    body {
+        background-color: #ffffff; /* 手機版背景直接改為純白更俐落 */
+    }
+    
+    .main-card, 
+    .border.rounded {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 10px 5px !important;
+        border-radius: 0;
+    }
+
+    /* 2. 輸入框：避免 iOS Safari 點擊自動放大 (字體需大於等於 16px) */
+    .input-group .form-control {
+        font-size: 16px; 
+    }
+
+    /* 4. 播放清單：增加上下間距方便滑動與點擊 */
+    #playlistList .playlist-item {
+        padding: 16px 12px;
+        margin-bottom: 6px;
+    }
+
+    /* 5. 封面標題：適度縮小，避免擋住過多影片畫面 */
+    .player-cover-title {
+        font-size: 10px;
+        bottom: 12px;
+        left: 0px;
+        padding: 4px 12px;
+    }
+
+    /* 6. 進度條：手機版稍微加高，方便手指精準點擊/拖曳 */
+    .player-progress-bar-container {
+        height: 12px;
+        background: rgba(255, 255, 255, 0.3); /* 加深底色讓能見度更高 */
+    }
+}
+
+/* 針對極小螢幕 (如 iPhone SE) 的進一步微調 */
+@media (max-width: 375px) {
+    .controls-area .btn-secondary {
+        flex: 1 1 calc(33.33% - 8px); /* 螢幕太小則改為一排三個 */
+    }
+    
+    .player-cover-title {
+        font-size: 12px;
+    }
+}

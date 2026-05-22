@@ -2,7 +2,7 @@
   "name": "YT-OZA WEB",
   "short_name": "YT-OZA",
   "description": "YT-OZA WEB",
-  "start_url": "/",
+  "start_url": "/yt/",
   "scope": "/",
   "id": "/",
   "display": "standalone",
