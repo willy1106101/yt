@@ -25,86 +25,141 @@
 
 <body>
 
-<div class="container py-3">
+    <div class="container py-1">
 
-    <!-- ===================== -->
-    <!-- 輸入區 -->
-    <!-- ===================== -->
-    <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="貼上 YouTube 影片網址..." id="videoUrl">
+        <!-- ===================== -->
+        <!-- 輸入區 -->
+        <!-- ===================== -->
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="貼上 YouTube 影片網址..." id="videoUrl">
 
-        <button class="btn btn-primary" type="button" id="playBtn">
-            <i class="bi bi-play-fill"></i> 播放
-        </button>
+            <button class="btn btn-primary" type="button" id="playBtn">
+                <i class="bi bi-play-fill"></i> 播放
+            </button>
 
-        <button class="btn btn-outline-secondary" type="button" id="playDefaultBtn">
-            預設影片
-        </button>
-    </div>
-
-    <!-- ===================== -->
-    <!-- 主體區（播放器 + playlist） -->
-    <!-- ===================== -->
-    <div class="row">
-
-        <!-- 播放器 -->
-        <div class="col-lg-8">
-
-            <div id="player-wrapper" class="mb-3">
-                <div id="player"></div>
-            </div>
-
-            <div class="main-card p-3 border rounded">
-
-                <div class="controls-area mb-3 d-flex gap-2">
-                    <select id="speedSelect">
-                        <option value="0.5">0.5x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="1" selected>1.0x</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="1.75">1.75x</option>
-                        <option value="2">2.0x</option>
-                    </select>
-                    <button class="btn btn-secondary" id="prevBtn">
-                        <i class="bi bi-skip-start-fill"></i>
-                    </button>
-
-                    <button class="btn btn-secondary" id="playPauseBtn">
-                        <i class="bi bi-play-fill"></i>
-                    </button>
-
-                    <button class="btn btn-secondary" id="nextBtn">
-                        <i class="bi bi-skip-end-fill"></i>
-                    </button>
-                    <button class="btn btn-secondary" id="muteBtn"><i class="bi bi-volume-up-fill"></i></button>
-                </div>
-
-                <!-- 播放資訊 -->
-                <div class="info-bar">
-                    <div class="fw-bold mb-1">播放資訊</div>
-
-                    <div id="videoTitle" class="mb-1"></div>
-                    <div id="currentTime" class="text-muted small"></div>
-                </div>
-
-            </div>
-
+            <button class="btn btn-outline-secondary" type="button" id="playDefaultBtn">
+                預設影片
+            </button>
         </div>
 
         <!-- ===================== -->
-        <!-- Playlist UI（新增重點） -->
+        <!-- 主體區（播放器 + playlist） -->
         <!-- ===================== -->
-        <div class="col-lg-4">
+        <div class="row">
 
-            <div class="border rounded p-2" style="max-height: 600px; overflow-y: auto;">
+            <!-- 播放器 -->
+            <div class="col-lg-8">
+                <div id="player-wrapper" class="mb-3">
+                    <div id="player" class="user-select-none"></div>
+                    <div id="playerCover" style="
+                        display: none; 
+                        position: absolute; 
+                        top: 0; left: 0; width: 100%; height: 100%; 
+                        background-color: #111; 
+                        background-position: center; 
+                        background-size: cover; 
+                        background-repeat: no-repeat;
+                        transition: background-image 0.5s ease-in-out; /* 換片時淡入淡出效果 */
+                        z-index: 20; /* 確保蓋在 iframe 上面 */
+                        pointer-events: none; /* 讓滑鼠點擊可以穿透，不影響 YouTube 內建控制 */
+                    " class="user-select-none">
+                        <!-- 可以在大圖中心加上歌曲標題的特效文字 -->
+                        <div style="position: absolute; bottom: 20px; left: 15px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.8); background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; font-size: 16px;"
+                            id="coverTitle" class="user-select-none">
+                            正在播放...
+                        </div>
+                    </div>
 
-                <div class="fw-bold mb-2">
+                    <!-- 🟢 新增：自訂進度條容器 -->
+                    <div id="progressBarContainer" style="
+                        position: absolute; 
+                        bottom: 0; left: 0; 
+                        width: 100%; height: 6px; 
+                        background: rgba(255,255,255,0.2); 
+                        cursor: pointer; 
+                        z-index: 40; /* 確保在封面之上，才能被點擊 */
+                    ">
+                        <!-- 真正跑動的進度條 -->
+                        <div id="progressBar" style="
+                            width: 0%; 
+                            height: 100%; 
+                            background: #0d6efd; /* Bootstrap Primary 藍色，可換成你想要的顏色 */
+                            transition: width 0.1s linear;
+                        "></div>
+                    </div>
+                </div>
+
+                <div class="main-card p-3 border rounded">
+                    <div class="row">
+                        <!-- 🚀 關鍵調整：使用 w-100 (滿寬), justify-content-between (左右對齊), align-items-center (垂直置中) -->
+                        <div
+                            class="controls-area mb-3 d-flex w-100 justify-content-between align-items-center flex-wrap gap-3">
+
+                            <!-- 左側控制區：放播放按鈕與速度選單 -->
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-secondary" id="prevBtn">
+                                    <i class="bi bi-skip-start-fill"></i>
+                                </button>
+
+                                <button class="btn btn-secondary" id="playPauseBtn">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+
+                                <button class="btn btn-secondary" id="nextBtn">
+                                    <i class="bi bi-skip-end-fill"></i>
+                                </button>
+                                
+                                <button class="btn btn-secondary" id="viewModeBtn" data-mode="video">
+                                    <i class="bi bi-image"></i>
+                                </button>
+
+                                <!-- 調整美化 select 下拉選單，加入 form-select 樣式 -->
+                                <select id="speedSelect" class="form-select form-select-sm user-select-none d-inline-block"
+                                    style="width: auto;">
+                                    <option value="0.5">0.5x</option>
+                                    <option value="0.75">0.75x</option>
+                                    <option value="1" selected>1.0x</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1.5">1.5x</option>
+                                    <option value="1.75">1.75x</option>
+                                    <option value="2">2.0x</option>
+                                </select>
+                            </div>
+
+                            <!-- 右側控制區：放聲音按鈕與當前時間 -->
+                            <div class="d-flex align-items-center gap-3">
+                                <!-- 如果你有音量滑桿，也可以直接塞在靜音按鈕前面或後面 -->
+                                <button class="btn btn-secondary" id="muteBtn">
+                                    <i class="bi bi-volume-up-fill"></i>
+                                </button>
+
+                                <button class="btn btn-secondary" id="fullscreenBtn">
+                                    <i class="bi bi-arrows-fullscreen"></i>
+                                </button>
+
+                                <!-- 時間移到這裡，與右邊對齊 -->
+                                <div id="currentTime" class="text-muted small fw-bold">00:00 / 00:00</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===================== -->
+            <!-- Playlist UI（新增重點） -->
+            <!-- ===================== -->
+            <div class="col-lg-4">
+                <div class="fw-bold mb-1">
                     Playlist <span id="playlist"></span>
                 </div>
+                <div id="videoTitle" class="mb-2 fw-bold fs-6"></div>
+                <div class="border rounded p-2" style="max-height: 400px; overflow-y: auto;">
+                    <!-- ⭐ 這個是你 JS render 用的 -->
+                    <div id="playlistList"></div>
 
-                <!-- ⭐ 這個是你 JS render 用的 -->
-                <div id="playlistList"></div>
+                </div>
 
             </div>
 
@@ -112,10 +167,8 @@
 
     </div>
 
-</div>
-
-<!-- 主程式 -->
-<script src="main_213.js"></script>
+    <!-- 主程式 -->
+    <script src="main_221.js"></script>
 
 </body>
 
