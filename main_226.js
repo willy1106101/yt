@@ -127,7 +127,7 @@ function onYouTubeIframeAPIReady() {
             autoplay: 1,
             mute: playerState.isMuted ? 1 : 0,
             playsinline: 1,
-            controls: 0,
+            controls: 1,
             rel: 0,
         },
         events: {
@@ -535,4 +535,21 @@ function jumpToInputTime(e) {
             if (e.key === 'Enter') jumpToInputTime();
         });
     }
+});
+
+$(document).ready(function() {
+    $('#pasteBtn').click(async function() {
+        // 檢查瀏覽器是否支援剪貼簿 API
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            try {
+                const text = await navigator.clipboard.readText();
+                $('#videoUrl').val(text);
+            } catch (err) {
+                console.error('手機讀取剪貼簿失敗: ', err);
+                alert('貼上失敗，請檢查是否已拒絕權限，或請直接長按輸入框手動貼上。');
+            }
+        } else {
+            alert('您的瀏覽器不支援一鍵貼上，請長按輸入框並選擇「貼上」。');
+        }
+    });
 });

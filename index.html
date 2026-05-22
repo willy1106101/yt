@@ -30,14 +30,18 @@
         <!-- ===================== -->
         <!-- 輸入區 -->
         <!-- ===================== -->
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="貼上 YouTube 影片網址..." id="videoUrl">
+        <div class="mb-3">
+            <input type="text" class="form-control mb-1" placeholder="貼上 YouTube 影片網址..." id="videoUrl">
 
             <button class="btn btn-primary" type="button" id="playBtn">
                 <i class="bi bi-play-fill"></i> 播放
             </button>
 
-            <button class="btn btn-outline-secondary" type="button" id="playDefaultBtn">
+            <button class="btn btn-secondary" type="button" id="pasteBtn">
+                <i class="bi bi-clipboard-fill"></i> 貼上
+            </button>
+
+            <button class="btn btn-secondary" type="button" id="playDefaultBtn">
                 預設影片
             </button>
         </div>
@@ -56,12 +60,11 @@
                         <div id="coverTitle" class="user-select-none player-cover-title">
                             正在播放...
                         </div>
-                    </div>
-
-                    <!-- 🟢 新增：自訂進度條容器 -->
-                    <div id="progressBarContainer" class="player-progress-bar-container">
-                        <!-- 真正跑動的進度條 -->
-                        <div id="progressBar" class="player-progress-bar"></div>
+                        <!-- 🟢 新增：自訂進度條容器 -->
+                        <div id="progressBarContainer" class="player-progress-bar-container">
+                            <!-- 真正跑動的進度條 -->
+                            <div id="progressBar" class="player-progress-bar"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -72,13 +75,13 @@
                             class="controls-area mb-3 d-flex w-100 justify-content-between align-items-center flex-wrap gap-3">
 
                             <!-- 左側控制區：放播放按鈕與速度選單 -->
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-secondary" id="prevBtn">
-                                    <i class="bi bi-skip-start-fill"></i>
-                                </button>
-
+                            <div class="d-flex align-items-center gap-3">
                                 <button class="btn btn-secondary" id="playPauseBtn">
                                     <i class="bi bi-play-fill"></i>
+                                </button>
+
+                                <button class="btn btn-secondary" id="prevBtn">
+                                    <i class="bi bi-skip-start-fill"></i>
                                 </button>
 
                                 <button class="btn btn-secondary" id="nextBtn">
@@ -153,7 +156,7 @@
 
     <!-- 主程式 -->
     <!-- 不能加 defer -->
-    <script src="main_225.js" async></script>
+    <script src="main_226.js" async></script>
 
 </body>
 
