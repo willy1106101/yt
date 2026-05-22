@@ -94,18 +94,6 @@ body {
     font-weight: 600;
 }
 
-/* iOS 偽全螢幕樣式降級處理 */
-.ios-fullscreen {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 9999 !important;
-    background-color: black !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
 
 .player-cover {
     display: none;
@@ -219,4 +207,27 @@ body {
     .player-cover-title {
         font-size: 12px;
     }
+}
+
+/* 當播放器處於 CSS 偽全螢幕狀態時的強制定位 */
+#player-wrapper.ios-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    /* 使用 svh (Small Viewport Height) 避免 iOS Safari 底部的網址工具列遮擋 */
+    height: 100svh !important; 
+    z-index: 99999 !important; /* 確保疊在網頁所有核心元件最上方 */
+    background: #000000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+/* 確保全螢幕下裡面的影片會撐滿 */
+#player-wrapper.ios-fullscreen video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* 保持影片比例不變形 */
 }

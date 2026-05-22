@@ -1,9 +1,14 @@
 // ============================
 // 載入 YouTube IFrame API
 // ============================
-const tag = document.createElement('script');
-tag.src = 'https://www.youtube.com/iframe_api';
-document.head.appendChild(tag);
+// const tag = document.createElement('script');
+// tag.src = 'https://www.youtube.com/iframe_api';
+// document.head.appendChild(tag);
+
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 // ============================
 // 全域變數
@@ -38,7 +43,8 @@ function onYouTubeIframeAPIReady() {
         },
         events: {
             onReady: onPlayerReady,
-            onStateChange: onPlayerStateChange
+            onStateChange: onPlayerStateChange,
+            onError: onPlayerError
         }
     });
 
@@ -82,6 +88,10 @@ function onPlayerStateChange(event) {
     }
 
     getVideoData();
+}
+
+function onPlayerError(event) {
+    console.error("播放發生錯誤，錯誤代碼：", event.data);
 }
 
 // ============================

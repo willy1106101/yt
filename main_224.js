@@ -1,9 +1,14 @@
 // ============================
 // YouTube IFrame API
 // ============================
-const tag = document.createElement('script');
-tag.src = 'https://www.youtube.com/iframe_api';
-document.head.appendChild(tag);
+// const tag = document.createElement('script');
+// tag.src = 'https://www.youtube.com/iframe_api';
+// document.head.appendChild(tag);
+
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 // ==========================================
 // 1. 全域變數與單一狀態管理 (State Management)
@@ -128,7 +133,8 @@ function onYouTubeIframeAPIReady() {
         },
         events: {
             onReady: onPlayerReady,
-            onStateChange: onPlayerStateChange
+            onStateChange: onPlayerStateChange,
+            onError: onPlayerError
         }
     });
     window.videoPlayer = player;
@@ -143,6 +149,9 @@ function onPlayerReady() {
     }
     updateMuteIcon(playerState.isMuted);
     loadCurrentMedia(true);
+}
+function onPlayerError(event) {
+    console.error("播放發生錯誤，錯誤代碼：", event.data);
 }
 
 async function loadCurrentMedia(isInitLoad = false) {
@@ -474,39 +483,80 @@ if (fullscreenBtn && playerWrapper) {
         const isIOSFullscreen = playerWrapper.classList.contains('ios-fullscreen');
         const isFullscreen = isNativeFullscreen || isIOSFullscreen;
 
+        const videoElement = playerWrapper.querySelector('video');
+
         if (!isFullscreen) {
-            if (playerWrapper.requestFullscreen) playerWrapper.requestFullscreen();
-            else if (playerWrapper.webkitRequestFullscreen) playerWrapper.webkitRequestFullscreen();
-            else if (playerWrapper.msRequestFullscreen) playerWrapper.msRequestFullscreen();
-            else {
-                playerWrapper.classList.add('ios-fullscreen');
-                document.body.style.overflow = 'hidden'; 
-                onFullscreenChange(); 
+            if (playerWrapper.requestFullscreen) {
+                playerWrapper.requestFullscreen();
+            } else if (playerWrapper.webkitRequestFullscreen) {
+                playerWrapper.webkitRequestFullscreen();
+            } else if (playerWrapper.msRequestFullscreen) {
+                playerWrapper.msRequestFullscreen();
+            } else if (videoElement && videoElement.webkitEnterFullscreen) {
+                // 如果是 iPhone，且不支援 div 全螢幕，則嘗試讓 video 本身進入 iOS 原生全螢幕
+                videoElement.webkitEnterFullscreen();
+            } else {
+                // 萬不得已，進入優化版的 CSS 偽全螢幕
+                enterCSSFullscreen();
             }
         } else {
-            if (document.exitFullscreen) document.exitFullscreen();
-            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            else if (document.msExitFullscreen) document.msExitFullscreen();
-            else {
-                playerWrapper.classList.remove('ios-fullscreen');
-                document.body.style.overflow = '';
-                onFullscreenChange();
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            } else {
+                // 退出 CSS 偽全螢幕
+                exitCSSFullscreen();
             }
         }
     });
 }
 
+// 進入 CSS 偽全螢幕的控制 (完美覆蓋手機視窗)
+function enterCSSFullscreen() {
+    playerWrapper.classList.add('ios-fullscreen');
+    document.documentElement.style.overflow = 'hidden'; // 同時鎖定 html 避免 iOS 橡皮筋滾動
+    document.body.style.overflow = 'hidden';
+    onFullscreenChange();
+}
+
+// 離開 CSS 偽全螢幕的控制
+function exitCSSFullscreen() {
+    playerWrapper.classList.remove('ios-fullscreen');
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    onFullscreenChange();
+}
+
 function onFullscreenChange() {
     if (!fullscreenBtn) return;
+    
+    // 檢查包含 iOS 原生 video 播放器的全螢幕狀態
+    const videoElement = playerWrapper ? playerWrapper.querySelector('video') : null;
     const isNativeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
     const isIOSFullscreen = playerWrapper && playerWrapper.classList.contains('ios-fullscreen');
-    const isFullscreen = isNativeFullscreen || isIOSFullscreen;
+    const isIOSVideoFullscreen = videoElement && videoElement.webkitDisplayingFullscreen;
+    
+    const isFullscreen = isNativeFullscreen || isIOSFullscreen || isIOSVideoFullscreen;
     
     const icon = fullscreenBtn.querySelector('i');
-    if (icon) icon.className = isFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-fullscreen';
+    if (icon) {
+        icon.className = isFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-fullscreen';
+    }
 }
+
+// 監聽各種原生全螢幕變動
 document.addEventListener('fullscreenchange', onFullscreenChange);
 document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+// 【關鍵補丁】監聽 iPhone Video 退出原生全螢幕的事件
+const videoElement = playerWrapper ? playerWrapper.querySelector('video') : null;
+if (videoElement) {
+    videoElement.addEventListener('webkitbeginfullscreen', onFullscreenChange);
+    videoElement.addEventListener('webkitendfullscreen', onFullscreenChange);
+}
 
 if (playPauseBtn) playPauseBtn.addEventListener('click', () => {
     if (!player) return;
