@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
-    <link rel="stylesheet" href="main_221.css">
+    <link rel="stylesheet" href="main_222.css">
 </head>
 
 <body>
@@ -58,6 +58,10 @@
                         </div>
                     </div>
 
+                    <button class="btn btn-secondary fullscreen-btn" id="fullscreenBtn">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                    </button>
+
                     <!-- 🟢 新增：自訂進度條容器 -->
                     <div id="progressBarContainer" class="player-progress-bar-container">
                         <!-- 真正跑動的進度條 -->
@@ -84,13 +88,14 @@
                                 <button class="btn btn-secondary" id="nextBtn">
                                     <i class="bi bi-skip-end-fill"></i>
                                 </button>
-                                
+
                                 <button class="btn btn-secondary" id="viewModeBtn" data-mode="video">
                                     <i class="bi bi-image"></i>
                                 </button>
 
                                 <!-- 調整美化 select 下拉選單，加入 form-select 樣式 -->
-                                <select id="speedSelect" class="form-select form-select-sm user-select-none d-inline-block"
+                                <select id="speedSelect"
+                                    class="form-select form-select-sm user-select-none d-inline-block"
                                     style="width: auto;">
                                     <option value="0.5">0.5x</option>
                                     <option value="0.75">0.75x</option>
@@ -102,15 +107,22 @@
                                 </select>
                             </div>
 
+                            <div class="time-seek-container d-flex align-items-center gap-3">
+                                <input type="number" id="seekHour" min="0" placeholder="時"
+                                    style="width: 60px; text-align: center;">
+                                <span>:</span>
+                                <input type="number" id="seekMinute" min="0" max="59" placeholder="分"
+                                    style="width: 60px; text-align: center;">
+                                <span>:</span>
+                                <input type="number" id="seekSecond" min="0" max="59" placeholder="秒"
+                                    style="width: 60px; text-align: center;">
+                            </div>
+
                             <!-- 右側控制區：放聲音按鈕與當前時間 -->
                             <div class="d-flex align-items-center gap-3">
                                 <!-- 如果你有音量滑桿，也可以直接塞在靜音按鈕前面或後面 -->
                                 <button class="btn btn-secondary" id="muteBtn">
                                     <i class="bi bi-volume-up-fill"></i>
-                                </button>
-
-                                <button class="btn btn-secondary" id="fullscreenBtn">
-                                    <i class="bi bi-arrows-fullscreen"></i>
                                 </button>
 
                                 <!-- 時間移到這裡，與右邊對齊 -->
@@ -131,7 +143,7 @@
                     Playlist <span id="playlist"></span>
                 </div>
                 <div id="videoTitle" class="mb-2 fw-bold fs-6"></div>
-                <div class="border rounded p-2" style="max-height: 400px; overflow-y: auto;">
+                <div class="border rounded p-2" style="max-height: 500px; overflow-y: auto;">
                     <!-- ⭐ 這個是你 JS render 用的 -->
                     <div id="playlistList"></div>
 
@@ -145,7 +157,7 @@
 
     <!-- 主程式 -->
     <!-- 不能加 defer -->
-    <script src="main_222.js" async></script>
+    <script src="main_223.js" async></script>
 
 </body>
 

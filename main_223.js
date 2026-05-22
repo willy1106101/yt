@@ -75,6 +75,11 @@ const speedSelect = document.getElementById('speedSelect');
 const playlistList = document.getElementById('playlistList');
 const playlistText = document.getElementById('playlist');
 
+// ====== 新增：時分秒跳轉 DOM ======
+const seekHour = document.getElementById('seekHour');
+const seekMinute = document.getElementById('seekMinute');
+const seekSecond = document.getElementById('seekSecond');
+
 if (playerWrapper) playerWrapper.style.position = 'relative';
 
 // ==========================================
@@ -220,6 +225,23 @@ function startTimeUpdate() {
                 if (progressBar) progressBar.style.width = `${percentage}%`;
                 
                 saveState({ playTime: c, playlistIndex: idx }); 
+            }
+            
+            // 🟢 新增：同步時分秒輸入框
+            // 計算當前的時、分、秒
+            const currentHour = Math.floor(c / 3600);
+            const currentMinute = Math.floor((c % 3600) / 60);
+            const currentSecond = Math.floor(c % 60);
+
+            // 判斷該欄位是否正在被使用者選取 (focus)，如果沒有才更新數字
+            if (seekHour && document.activeElement !== seekHour) {
+                seekHour.value = currentHour;
+            }
+            if (seekMinute && document.activeElement !== seekMinute) {
+                seekMinute.value = currentMinute;
+            }
+            if (seekSecond && document.activeElement !== seekSecond) {
+                seekSecond.value = currentSecond;
             }
         }
     }, 250);
@@ -498,4 +520,51 @@ if (nextBtn) nextBtn.addEventListener('click', () => {
 
 if (prevBtn) prevBtn.addEventListener('click', () => {
     if (player && player.getPlaylist()) player.previousVideo();
+});
+
+
+// ====== 更新：時分秒直接監聽跳轉 ======
+function jumpToInputTime(e) { 
+    if (!player || typeof player.seekTo !== 'function') return;
+
+    const h = parseInt(seekHour.value) || 0;
+    const m = parseInt(seekMinute.value) || 0;
+    const s = parseInt(seekSecond.value) || 0;
+
+    const totalSeconds = (h * 3600) + (m * 60) + s;
+    const duration = player.getDuration();
+    
+    if (duration > 0 && totalSeconds > duration) {
+        console.warn('設定的時間超過影片總長度');
+        return; 
+    }
+
+    // 執行跳轉與存檔
+    player.seekTo(totalSeconds, true);
+    saveState({ playTime: totalSeconds });
+
+    // 🟢 新增：手動更新時間文字與進度條（解決暫停時畫面沒更新的問題）
+    if (currentTimeEl && !isNaN(duration) && duration > 0) {
+        currentTimeEl.textContent = `${format(totalSeconds)} / ${format(duration)}`;
+        if (progressBar) {
+            progressBar.style.width = `${(totalSeconds / duration) * 100}%`;
+        }
+    }
+
+    // 手機版體驗優化：執行跳轉後，主動讓輸入框失去焦點，強制收起手機小鍵盤
+    if (e && e.target && typeof e.target.blur === 'function') {
+        e.target.blur();
+    }
+}
+
+// 2. 直接監聽三個輸入框的 change 事件 (包含按上下箭頭調整)
+[seekHour, seekMinute, seekSecond].forEach(inputEl => {
+    if (inputEl) {
+        inputEl.addEventListener('change', jumpToInputTime);
+        
+        // 保留 Enter 鍵也能觸發的習慣
+        inputEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') jumpToInputTime();
+        });
+    }
 });

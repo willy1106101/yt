@@ -128,7 +128,7 @@ body {
 
 .player-cover-title {
     position: absolute;
-    bottom: 20px;
+    top: 20px;
     left: 15px;
     color: #fff;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
@@ -136,6 +136,13 @@ body {
     padding: 5px 15px;
     border-radius: 20px;
     font-size: 16px;
+}
+
+.fullscreen-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 5px;
+    z-index: 40;
 }
 
 .player-progress-bar-container {
@@ -155,6 +162,13 @@ body {
     background: #0d6efd;
     /* Bootstrap Primary 藍色，可換成你想要的顏色 */
     transition: width 0.1s linear;
+}
+
+.time-seek-container {
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    margin: 10px 0;
 }
 
 @media (max-width: 768px) {
@@ -185,7 +199,6 @@ body {
     /* 5. 封面標題：適度縮小，避免擋住過多影片畫面 */
     .player-cover-title {
         font-size: 10px;
-        bottom: 12px;
         left: 0px;
         padding: 4px 12px;
     }
