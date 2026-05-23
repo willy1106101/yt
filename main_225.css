@@ -152,6 +152,36 @@ body {
     margin: 10px 0;
 }
 
+/* 1. 基礎按鈕狀態（預設暫停時，完全顯現） */
+#centerPlayBtn {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    transition: opacity 0.25s ease, transform 0.15s ease, background-color 0.2s ease;
+}
+
+/* 點擊時的物理回饋感 */
+#centerPlayBtn:active {
+    transform: translate(-50%, -50%) scale(0.9);
+}
+
+/* 2. 🟢 關鍵修正：當影片在播放中（.playing）的狀態控制 */
+/* 播放中，且滑鼠「沒有」移入封面時 ➔ 完美隱藏 */
+#playerCover.playing #centerPlayBtn {
+    opacity: 0;
+}
+
+/* 播放中，但滑鼠「有」移入封面時 ➔ 半透明顯現（不閃爍） */
+#playerCover.playing:hover #centerPlayBtn {
+    opacity: 0.6;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* 3. 當滑鼠移入時，無論是否播放，都允許指針點擊 */
+#playerCover:hover #centerPlayBtn {
+    /* 確保滑鼠滑入時一定是看得見的，且蓋過上面的 opacity: 0 */
+    opacity: 1; 
+}
+
 @media (max-width: 768px) {
     /* 1. 空間優化：移除外框陰影與多餘留白，最大化可視範圍 */
     body {
@@ -201,3 +231,4 @@ body {
         font-size: 12px;
     }
 }
+

@@ -22,12 +22,13 @@ const STORAGE_KEY = 'youtube_player_state';
 let playerState = {
     viewMode: 'video',
     playTime: 0,
-    mediaType: 'video',      
+    mediaType: 'video',
     videoId: '9xp1XWmJ_Wo',  // 獨立儲存影片ID
     playlistId: null,        // 獨立儲存清單ID
-    playlistIndex: 0,        
+    playlistIndex: 0,
     isMuted: false,
-    playbackSpeed: 1
+    playbackSpeed: 1,
+    volume: 100
 };
 
 // 單一讀取函式
@@ -41,7 +42,7 @@ function loadState() {
         }
     }
 }
-loadState(); 
+loadState();
 
 // 單一儲存函式
 function saveState(updates) {
@@ -54,7 +55,7 @@ let videoId = playerState.videoId;
 let playList = playerState.playlistId;
 
 const videoCache = {};
-let timeUpdateTimer = null; 
+let timeUpdateTimer = null;
 
 // ==========================================
 // 2. DOM 元素取得
@@ -62,16 +63,18 @@ let timeUpdateTimer = null;
 const viewModeBtn = document.getElementById('viewModeBtn');
 const playerCover = document.getElementById('playerCover');
 const coverTitle = document.getElementById('coverTitle');
-const playerWrapper = document.getElementById('player-wrapper'); 
+const playerWrapper = document.getElementById('player-wrapper');
 const progressBarContainer = document.getElementById('progressBarContainer');
 const progressBar = document.getElementById('progressBar');
 const currentTimeEl = document.getElementById('currentTime');
 const videoTitleEl = document.getElementById('videoTitle');
 
+const centerPlayBtn = document.getElementById('centerPlayBtn');
 const playPauseBtn = document.getElementById('playPauseBtn');
 const nextBtn = document.getElementById('nextBtn');
 const prevBtn = document.getElementById('prevBtn');
 const muteBtn = document.getElementById('muteBtn');
+const volumeSlider = document.getElementById('volumeSlider');
 const playBtn = document.getElementById('playBtn');
 const playDefaultBtn = document.getElementById('playDefaultBtn');
 const videoUrlInput = document.getElementById('videoUrl');
@@ -104,13 +107,14 @@ function initSavedUIState() {
     }
 
     if (speedSelect) speedSelect.value = playerState.playbackSpeed;
+    if (volumeSlider) volumeSlider.value = playerState.volume;
 
     // 🟢 根據獨立的 ID 來還原網址
     if (videoUrlInput) {
         if (playerState.mediaType === 'playlist' && playerState.playlistId) {
-            videoUrlInput.value = 'https://www.youtube.com/playlist?list=' + playerState.playlistId;
+            videoUrlInput.value = playerState.playlistId;
         } else if (playerState.mediaType === 'video' && playerState.videoId !== '9xp1XWmJ_Wo') {
-            videoUrlInput.value = 'https://www.youtube.com/watch?v=' + playerState.videoId;
+            videoUrlInput.value = playerState.videoId;
         }
     }
 }
@@ -141,6 +145,9 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady() {
     player.setPlaybackRate(parseFloat(playerState.playbackSpeed));
+    if (typeof player.setVolume === 'function') {
+        player.setVolume(playerState.volume);
+    }
     if (playerState.isMuted) {
         player.mute();
     } else {
@@ -163,15 +170,15 @@ async function loadCurrentMedia(isInitLoad = false) {
     if (playerState.mediaType === 'playlist' && playList) {
         // 檢查 playList 是不是一個 JavaScript 陣列 (Array)
         if (Array.isArray(playList)) {
-            player.loadPlaylist({ 
+            player.loadPlaylist({
                 playlist: playList,  // 這裡不設定 listType，直接把陣列傳給 playlist 屬性
                 index: listIdx,
                 startSeconds: startSec
             });
         } else {
             // 如果是一般的 YouTube 官方清單 ID 字串 (例如 "PLrAXtm...")
-            player.loadPlaylist({ 
-                listType: 'playlist', 
+            player.loadPlaylist({
+                listType: 'playlist',
                 list: playList,
                 index: listIdx,
                 startSeconds: startSec
@@ -198,12 +205,18 @@ function onPlayerStateChange(event) {
         if (playPauseBtn) playPauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
         startTimeUpdate();
         if (currentMode === 'video' && playerCover) playerCover.style.opacity = '1';
+        // 🟢 新增：當影片開始播放時，幫封面加上 playing 樣式，並更新中央圖示
+        if (playerCover) playerCover.classList.add('playing');
+        if (window.updateCenterBtnIcon) window.updateCenterBtnIcon(true);
     } else {
         if (playPauseBtn) playPauseBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
         stopTimeUpdate();
         if (event.data === YT.PlayerState.BUFFERING && playerCover) {
-            playerCover.style.opacity = '1'; 
+            playerCover.style.opacity = '1';
         }
+        // 🟢 新增：當影片暫停、結束時，移除 playing 樣式，並恢復播放圖示
+        if (playerCover) playerCover.classList.remove('playing');
+        if (window.updateCenterBtnIcon) window.updateCenterBtnIcon(false);
     }
 
     const list = player.getPlaylist();
@@ -228,7 +241,7 @@ function startTimeUpdate() {
 
         const c = player.getCurrentTime();
         const d = player.getDuration();
-        
+
         let idx = playerState.playlistIndex;
         if (typeof player.getPlaylistIndex === 'function') {
             const currentIdx = player.getPlaylistIndex();
@@ -237,21 +250,19 @@ function startTimeUpdate() {
 
         if (!isNaN(c) && !isNaN(d)) {
             if (currentTimeEl) currentTimeEl.textContent = `${format(c)} / ${format(d)}`;
-            
+
             if (d > 0) {
                 const percentage = (c / d) * 100;
                 if (progressBar) progressBar.style.width = `${percentage}%`;
-                
-                saveState({ playTime: c, playlistIndex: idx }); 
+
+                saveState({ playTime: c, playlistIndex: idx });
             }
-            
-            // 🟢 新增：同步時分秒輸入框
-            // 計算當前的時、分、秒
+
+            // 🟢 同步時分秒輸入框
             const currentHour = Math.floor(c / 3600);
             const currentMinute = Math.floor((c % 3600) / 60);
             const currentSecond = Math.floor(c % 60);
 
-            // 判斷該欄位是否正在被使用者選取 (focus)，如果沒有才更新數字
             if (seekHour && document.activeElement !== seekHour) {
                 seekHour.value = currentHour;
             }
@@ -262,6 +273,28 @@ function startTimeUpdate() {
                 seekSecond.value = currentSecond;
             }
         }
+
+        // 🟢 新增：即時同步音量滑桿與靜音圖示 (防止使用者用原生控制項調整)
+        if (typeof player.getVolume === 'function' && typeof player.isMuted === 'function') {
+            const currentVolume = player.getVolume();
+            const currentMuted = player.isMuted();
+
+            // 1. 同步音量滑桿 (只有在使用者沒有在拖曳/聚焦滑桿時才更新，避免卡頓)
+            if (volumeSlider && document.activeElement !== volumeSlider) {
+                volumeSlider.value = currentVolume;
+            }
+
+            // 2. 根據當前真實狀態更新靜音圖示與狀態儲存
+            // 如果真實狀態跟目前記憶狀態不同，才觸發更新
+            if (currentMuted !== playerState.isMuted || currentVolume !== playerState.volume) {
+                updateMuteIcon(currentMuted || currentVolume === 0);
+                saveState({
+                    volume: currentVolume,
+                    isMuted: currentMuted
+                });
+            }
+        }
+
     }, 250);
 }
 
@@ -295,7 +328,7 @@ if (progressBarContainer) {
                 const clickX = e.clientX - rect.left;
                 const percentage = clickX / rect.width;
                 const seekTime = duration * percentage;
-                
+
                 player.seekTo(seekTime, true);
                 if (progressBar) progressBar.style.width = `${percentage * 100}%`;
                 saveState({ playTime: seekTime });
@@ -383,7 +416,7 @@ async function renderPlaylist() {
     if (!list) return;
 
     const currentIndex = player.getPlaylistIndex();
-    if (currentIndex === -1) return; 
+    if (currentIndex === -1) return;
 
     const infos = await Promise.all(list.map(id => fetchVideoInfo(id)));
     let html = '';
@@ -407,7 +440,9 @@ async function renderPlaylist() {
     playlistList.innerHTML = html;
     playlistList.style.display = 'flex';
     playlistList.style.flexDirection = 'column';
-    if (playlistText) playlistText.textContent = `(${currentIndex + 1} / ${list.length})`;
+    if (playlistText) {
+        playlistText.textContent = `ID: ${list[currentIndex]} (第 ${currentIndex + 1} 首 ，共 ${list.length} 首)`;
+    }
 
     setTimeout(() => {
         const activeItem = playlistList.querySelector('.item.active');
@@ -426,7 +461,7 @@ async function renderPlaylist() {
 function updateVideoData() {
     const data = player.getVideoData();
     if (!data || !videoTitleEl) return;
-    
+
     // 🟢 這裡只更新 videoId，就算在清單模式下，也不會洗掉 playlistId！
     saveState({ videoId: data.video_id });
     videoTitleEl.innerHTML = `<a href="https://www.youtube.com/watch?v=${data.video_id}" class="text-decoration-none text-dark" title="${data.title}">${data.title}</a>` || '';
@@ -452,33 +487,92 @@ if (viewModeBtn && playerCover) {
     viewModeBtn.addEventListener('click', () => {
         const currentMode = viewModeBtn.getAttribute('data-mode');
         const newMode = currentMode === 'video' ? 'cover' : 'video';
-        
+
         viewModeBtn.setAttribute('data-mode', newMode);
         viewModeBtn.innerHTML = newMode === 'cover' ? '<i class="bi bi-film"></i>' : '<i class="bi bi-image"></i>';
         playerCover.style.display = newMode === 'cover' ? 'block' : 'none';
         playerCover.style.pointerEvents = newMode === 'cover' ? 'auto' : 'none';
-        
+
         saveState({ viewMode: newMode });
     });
 }
 
+if (playerCover && centerPlayBtn) {
+    centerPlayBtn.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest("#progressBarContainer") || e.target.closest('input') || e.target.closest('.item')) {
+            return;
+        }
+
+        if (!player || typeof player.getPlayerState !== 'function') return;
+        const currentState = player.getPlayerState();
+
+        if (currentState === YT.PlayerState.PLAYING) {
+            player.pauseVideo();
+        } else {
+            player.playVideo();
+        }
+    });
+
+    // 🟢 簡化此函式：只管換圖，不管透明度（透明度交給 CSS 控制）
+    function updateCenterBtnIcon(isPlaying) {
+        if (isPlaying) {
+            centerPlayBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+        } else {
+            centerPlayBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+        }
+    }
+
+    window.updateCenterBtnIcon = updateCenterBtnIcon;
+}
+
 if (muteBtn) muteBtn.addEventListener('click', () => {
-    // 🟢 加入 typeof 防呆，確保 API 已經準備好
     if (!player || typeof player.isMuted !== 'function') return;
-    
+
     const isCurrentlyMuted = player.isMuted();
-    const targetMuteState = !isCurrentlyMuted; // 決定要切換過去的狀態
-    
+    const targetMuteState = !isCurrentlyMuted;
+
     if (targetMuteState) {
         player.mute();
     } else {
         player.unMute();
+        // 🟢 如果解除靜音時，滑桿數值是 0，主動幫它恢復到 30 的音量，不然會聽不見
+        if (volumeSlider && parseInt(volumeSlider.value, 10) === 0) {
+            volumeSlider.value = 30;
+            player.setVolume(30);
+            saveState({ volume: 30 });
+        }
     }
-    
-    // 🟢 立即強制更新 UI 與存檔，不管 YouTube API 回應了沒
+
     updateMuteIcon(targetMuteState);
     saveState({ isMuted: targetMuteState });
 });
+
+if (volumeSlider) {
+    // 監聽 input 事件，滑鼠拖曳的過程中會即時改變音量
+    volumeSlider.addEventListener('input', (e) => {
+        const volumeValue = parseInt(e.target.value, 10);
+
+        if (player && typeof player.setVolume === 'function') {
+            player.setVolume(volumeValue);
+
+            // 💡 體驗優化：如果使用者把音量拉大於 0，且原本是靜音狀態，就主動解除靜音
+            if (volumeValue > 0 && player.isMuted()) {
+                player.unMute();
+                updateMuteIcon(false);
+                saveState({ isMuted: false });
+            }
+            // 如果拉到 0，就自動切換成靜音圖示
+            else if (volumeValue === 0) {
+                updateMuteIcon(true);
+            } else {
+                updateMuteIcon(false);
+            }
+        }
+
+        // 儲存當前音量到 LocalStorage
+        saveState({ volume: volumeValue });
+    });
+}
 
 if (speedSelect) speedSelect.addEventListener('change', (e) => {
     const speed = parseFloat(e.target.value);
@@ -492,15 +586,15 @@ if (playBtn && videoUrlInput) {
         if (!url) return alert('請先輸入 YouTube 影片或清單網址！');
 
         const target = parseYoutubeUrl(url);
-        
+
         // 🟢 點擊播放時，明確地將影片 ID 與清單 ID 分別存入
         if (target.playlistId) {
             playList = target.playlistId;
-            videoId = target.videoId || null; 
+            videoId = target.videoId || null;
             saveState({ mediaType: 'playlist', playlistId: playList, videoId: videoId, playTime: 0, playlistIndex: 0 });
             loadCurrentMedia(false);
         } else if (target.videoId) {
-            playList = null; 
+            playList = null;
             videoId = target.videoId;
             saveState({ mediaType: 'video', playlistId: null, videoId: videoId, playTime: 0, playlistIndex: 0 });
             loadCurrentMedia(false);
@@ -551,7 +645,7 @@ if (prevBtn) prevBtn.addEventListener('click', () => {
 
 
 // ====== 更新：時分秒直接監聽跳轉 ======
-function jumpToInputTime(e) { 
+function jumpToInputTime(e) {
     if (!player || typeof player.seekTo !== 'function') return;
 
     const h = parseInt(seekHour.value) || 0;
@@ -560,10 +654,10 @@ function jumpToInputTime(e) {
 
     const totalSeconds = (h * 3600) + (m * 60) + s;
     const duration = player.getDuration();
-    
+
     if (duration > 0 && totalSeconds > duration) {
         console.warn('設定的時間超過影片總長度');
-        return; 
+        return;
     }
 
     // 執行跳轉與存檔
@@ -588,7 +682,7 @@ function jumpToInputTime(e) {
 [seekHour, seekMinute, seekSecond].forEach(inputEl => {
     if (inputEl) {
         inputEl.addEventListener('change', jumpToInputTime);
-        
+
         // 保留 Enter 鍵也能觸發的習慣
         inputEl.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') jumpToInputTime();
@@ -596,8 +690,8 @@ function jumpToInputTime(e) {
     }
 });
 
-$(document).ready(function() {
-    $('#pasteBtn').click(async function() {
+$(document).ready(function () {
+    $('#pasteBtn').click(async function () {
         // 檢查瀏覽器是否支援剪貼簿 API
         if (navigator.clipboard && navigator.clipboard.readText) {
             try {
@@ -611,4 +705,19 @@ $(document).ready(function() {
             alert('您的瀏覽器不支援一鍵貼上，請長按輸入框並選擇「貼上」。');
         }
     });
+});
+// 🟢 嘗試對抗手機切換視窗自動暫停的實驗性寫法
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // 當使用者把網頁縮小、換分頁或關螢幕時
+        console.log('網頁進入後台...');
+
+        // 如果原本是播放中，被系統強制暫停了，我們在後台偷偷叫它繼續播
+        if (player && typeof player.getPlayerState === 'function') {
+            // 延遲一下下，避開瀏覽器剛切換時的強制掛起
+            setTimeout(() => {
+                player.playVideo();
+            }, 300);
+        }
+    }
 });
