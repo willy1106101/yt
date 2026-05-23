@@ -161,12 +161,22 @@ async function loadCurrentMedia(isInitLoad = false) {
 
     // 🟢 依據 mediaType 判斷該載入清單還是影片
     if (playerState.mediaType === 'playlist' && playList) {
-        player.loadPlaylist({ 
-            listType: 'playlist', 
-            list: playList,
-            index: listIdx,
-            startSeconds: startSec
-        });
+        // 檢查 playList 是不是一個 JavaScript 陣列 (Array)
+        if (Array.isArray(playList)) {
+            player.loadPlaylist({ 
+                playlist: playList,  // 這裡不設定 listType，直接把陣列傳給 playlist 屬性
+                index: listIdx,
+                startSeconds: startSec
+            });
+        } else {
+            // 如果是一般的 YouTube 官方清單 ID 字串 (例如 "PLrAXtm...")
+            player.loadPlaylist({ 
+                listType: 'playlist', 
+                list: playList,
+                index: listIdx,
+                startSeconds: startSec
+            });
+        }
     } else if (videoId) {
         try {
             const videoinfo = await fetchVideoInfo(videoId);
@@ -313,16 +323,57 @@ async function fetchVideoInfo(id) {
 function parseYoutubeUrl(url) {
     const result = { videoId: null, playlistId: null };
     if (!url) return result;
-    try {
-        const urlObj = new URL(url);
-        if (urlObj.searchParams.has('list')) result.playlistId = urlObj.searchParams.get('list');
-        if (urlObj.searchParams.has('v')) result.videoId = urlObj.searchParams.get('v');
-        else if (urlObj.hostname === 'youtu.be') result.videoId = urlObj.pathname.substring(1);
-        else if (urlObj.pathname.startsWith('/embed/')) result.videoId = urlObj.pathname.split('/')[2];
-    } catch (e) {
-        if (url.length === 11) result.videoId = url;
-        else if (url.length > 11) result.playlistId = url;
+
+    url = url.trim();
+
+    // 1. 檢查是否為網址 (包含 http 或 youtube 關鍵字)
+    if (url.includes('http') || url.includes('youtube.com') || url.includes('youtu.be')) {
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.searchParams.has('list')) result.playlistId = urlObj.searchParams.get('list');
+            if (urlObj.searchParams.has('v')) result.videoId = urlObj.searchParams.get('v');
+            else if (urlObj.hostname === 'youtu.be') result.videoId = urlObj.pathname.substring(1);
+            else if (urlObj.pathname.startsWith('/embed/')) result.videoId = urlObj.pathname.split('/')[2];
+        } catch (e) {
+            console.error('網址解析失敗', e);
+        }
+        return result;
     }
+
+    // 2. 如果不是網址，檢查是否為符合 JSON 陣列格式，例如 ["ID1", "ID2"] 或 ['ID1', 'ID2']
+    if (url.startsWith('[') && url.endsWith(']')) {
+        try {
+            // 把單引號替換成雙引號以符合標準 JSON 格式
+            const cleanJson = url.replace(/'/g, '"');
+            const parsedArray = JSON.parse(cleanJson);
+            if (Array.isArray(parsedArray) && parsedArray.length > 0) {
+                result.playlistId = parsedArray; // 🟢 直接把整個陣列塞進 playlistId 傳回去
+                return result;
+            }
+        } catch (e) {
+            console.warn('嘗試解析 JSON 陣列失敗，將轉用分隔符號解析');
+        }
+    }
+
+    // 3. 處理用「逗號」、「空格」或「換行」分隔的純 ID 列表 (例如: dQw4w9WgXcQ, 9xp1XWmJ_Wo)
+    // 如果字串裡面有逗號或空格，代表它是複數 ID
+    if (url.includes(',') || url.includes(' ') || url.includes('\n')) {
+        // 利用正則表達式把 逗號、空格、換行 切開，並過濾掉空欄位
+        const idList = url.split(/[\s,\n]+/).filter(id => id.trim().length === 11);
+        if (idList.length > 0) {
+            result.playlistId = idList; // 🟢 一樣當作自訂陣列傳回
+            return result;
+        }
+    }
+
+    // 4. 最後防線：如果只有 11 碼，那就是單一影片 ID
+    if (url.length === 11) {
+        result.videoId = url;
+    } else if (url.length > 11) {
+        // 如果超過 11 碼且不是網址，盲猜它是官方的 Playlist ID (例如 PLrAXtm...)
+        result.playlistId = url;
+    }
+
     return result;
 }
 
@@ -360,7 +411,15 @@ async function renderPlaylist() {
 
     setTimeout(() => {
         const activeItem = playlistList.querySelector('.item.active');
-        if (activeItem) activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (activeItem) {
+            if (typeof activeItem.scrollIntoViewIfNeeded === 'function') {
+                // 🟢 這是最完美的解法：只在看不見時才滾動，且絕不連動整個螢幕
+                activeItem.scrollIntoViewIfNeeded(false); // false 代表滾動到容器的最近邊緣，類似 nearest
+            } else {
+                // 防呆備用：萬一極舊瀏覽器不支援，才走舊方法，但把 block 改成 center 或 nearest
+                activeItem.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+            }
+        }
     }, 50);
 }
 
@@ -370,7 +429,7 @@ function updateVideoData() {
     
     // 🟢 這裡只更新 videoId，就算在清單模式下，也不會洗掉 playlistId！
     saveState({ videoId: data.video_id });
-    videoTitleEl.textContent = data.title || '';
+    videoTitleEl.innerHTML = `<a href="https://www.youtube.com/watch?v=${data.video_id}" class="text-decoration-none text-dark" title="${data.title}">${data.title}</a>` || '';
 }
 
 function updateCoverImage(imgUrl, titleText) {
