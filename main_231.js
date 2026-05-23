@@ -513,7 +513,7 @@ if (playerCover && centerPlayBtn) {
         }
     });
 
-    // 🟢 簡化此函式：只管換圖，不管透明度（透明度交給 CSS 控制）
+    // 簡化此函式：只管換圖，不管透明度（透明度交給 CSS 控制）
     function updateCenterBtnIcon(isPlaying) {
         if (isPlaying) {
             centerPlayBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
