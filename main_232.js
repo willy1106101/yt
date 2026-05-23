@@ -706,18 +706,86 @@ $(document).ready(function () {
         }
     });
 });
-// 🟢 嘗試對抗手機切換視窗自動暫停的實驗性寫法
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        // 當使用者把網頁縮小、換分頁或關螢幕時
-        console.log('網頁進入後台...');
+let audioCtx = null;
 
-        // 如果原本是播放中，被系統強制暫停了，我們在後台偷偷叫它繼續播
-        if (player && typeof player.getPlayerState === 'function') {
-            // 延遲一下下，避開瀏覽器剛切換時的強制掛起
-            setTimeout(() => {
-                player.playVideo();
-            }, 300);
+function startMobileBackgroundKeeper() {
+    // 🟢 檢查：如果「不是」手機或平板（代表是電腦），直接收工不運作
+    if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        return; 
+    }
+
+    try {
+        // 建立 Web Audio 上下文
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // 建立一個震盪器 (Oscillator) 與增益節點 (Gain)
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(1, audioCtx.currentTime); // 1Hz 超低頻，人耳聽不見
+
+        // 音量調至極小雙重保險
+        gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        console.log("手機專屬系統音訊護身符已啟動");
+    } catch (e) {
+        console.error("Web Audio 啟動失敗", e);
+    }
+}
+
+// ====== 整合至您原本的 playerCover 點擊監聽 ======
+if (playerCover) {
+    playerCover.addEventListener('click', (e) => {
+        // ... 您原本的防呆 (closest button, input 等) ...
+        if (e.target.closest('button') || e.target.closest("#progressBarContainer") || e.target.closest('input') || e.target.closest('.item')) return;
+
+        if (!player || typeof player.getPlayerState !== 'function') return;
+        
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+            player.pauseVideo();
+        } else {
+            player.playVideo();
+            // 🚀 只有手機點擊播放時，才會觸發音波護身符
+            startMobileBackgroundKeeper();
+        }
+    });
+}
+
+let mobileResetTimer = null;
+
+document.addEventListener('visibilitychange', () => {
+    // 🟢 檢查：如果「不是」手機或平板（代表是電腦），直接跳出，完全不運作
+    if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        return; 
+    }
+
+    if (document.hidden) {
+        console.log('手機使用者離開視窗，啟動手機後台守護程序...');
+        
+        // 每 300 毫秒強力反擊系統的強制暫停
+        mobileResetTimer = setInterval(() => {
+            if (player && typeof player.getPlayerState === 'function') {
+                const state = player.getPlayerState();
+                
+                // 如果被手機系統強制變成 暫停(2) 或 未開始(-1)，用程式碼強制播回來
+                if (state === YT.PlayerState.PAUSED || state === -1) {
+                    player.playVideo();
+                    console.log("偵測到手機系統強制暫停，已自動恢復播放！");
+                }
+            }
+        }, 300);
+    } else {
+        // 使用者回到網頁了，清除定時器
+        if (mobileResetTimer) {
+            clearInterval(mobileResetTimer);
+            mobileResetTimer = null;
         }
     }
 });
